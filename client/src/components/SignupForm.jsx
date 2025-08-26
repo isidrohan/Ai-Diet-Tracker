@@ -1,151 +1,213 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-export default function SignupForm({ onSubmit, loading = false, error = "" }) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
+const SignupForm = ({ onSubmit, error }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
-  const [inputError, setInputError] = useState({});
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focused, setFocused] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      return;
+    }
+    setLoading(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setInputError({ ...inputError, [e.target.name]: "" });
-  };
-
-  const validate = () => {
-    const errors = {};
-    if (!form.name) {
-      errors.name = "Name is required";
-    }
-    if (!form.email) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      errors.email = "Invalid email";
-    }
-    if (!form.password) {
-      errors.password = "Password is required";
-    } else if (form.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-    }
-    setInputError(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    onSubmit(form);
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-6 max-w-md mx-auto p-8 bg-white rounded shadow"
-      aria-label="Signup Form"
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-sm bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-xl"
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Sign Up</h2>
-      {(error || Object.values(inputError).length > 0) && (
-        <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
-          {error || inputError.name || inputError.email || inputError.password}
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          Create Account
+        </h2>
+        <p className="mt-1 text-sm text-gray-600">Join the smart way to track your nutrition</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="bg-red-50 text-red-700 p-4 rounded-lg text-sm font-medium border border-red-100">
+            <div className="flex">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {error}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {/* Name Input */}
+          <div className="relative">
+            <label 
+              className={`absolute left-3 ${
+                focused === 'name' || formData.name 
+                  ? '-top-2 text-xs bg-white px-2 text-emerald-600' 
+                  : 'top-2.5 text-gray-400'
+              } transition-all duration-200`}
+              htmlFor="name"
+            >
+              Full Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              value={formData.name}
+              onChange={handleChange}
+              onFocus={() => setFocused('name')}
+              onBlur={() => setFocused('')}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition duration-200"
+            />
+          </div>
+
+          {/* Email Input */}
+          <div className="relative">
+            <label 
+              className={`absolute left-3 ${
+                focused === 'email' || formData.email 
+                  ? '-top-2.5 text-sm bg-white px-2 text-emerald-600' 
+                  : 'top-3 text-gray-400'
+              } transition-all duration-200`}
+              htmlFor="email"
+            >
+              Email Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              onFocus={() => setFocused('email')}
+              onBlur={() => setFocused('')}
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition duration-200"
+            />
+          </div>
+
+          {/* Password Input */}
+          <div className="relative">
+            <label 
+              className={`absolute left-3 ${
+                focused === 'password' || formData.password 
+                  ? '-top-2.5 text-sm bg-white px-2 text-emerald-600' 
+                  : 'top-3 text-gray-400'
+              } transition-all duration-200`}
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              value={formData.password}
+              onChange={handleChange}
+              onFocus={() => setFocused('password')}
+              onBlur={() => setFocused('')}
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition duration-200"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          {/* Confirm Password Input */}
+          <div className="relative">
+            <label 
+              className={`absolute left-3 ${
+                focused === 'confirmPassword' || formData.confirmPassword 
+                  ? '-top-2.5 text-sm bg-white px-2 text-emerald-600' 
+                  : 'top-3 text-gray-400'
+              } transition-all duration-200`}
+              htmlFor="confirmPassword"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              required
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              onFocus={() => setFocused('confirmPassword')}
+              onBlur={() => setFocused('')}
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition duration-200"
+            />
+          </div>
         </div>
-      )}
 
-      {/* Name */}
-      <div>
-        <label htmlFor="name" className="block text-gray-700 mb-1 font-medium">
-          Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          autoComplete="name"
-          placeholder="Your Name"
-          value={form.name}
-          onChange={handleChange}
-          className={`w-full border p-2 rounded focus:outline-none ${
-            inputError.name ? "border-red-500" : "border-gray-300"
-          }`}
-        />
-        {inputError.name && (
-          <span className="text-red-500 text-xs">{inputError.name}</span>
-        )}
-      </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg font-medium 
+                   shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 
+                   transition duration-200 relative overflow-hidden"
+        >
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Creating Account...
+            </div>
+          ) : (
+            "Create Account"
+          )}
+        </motion.button>
 
-      {/* Email */}
-      <div>
-        <label htmlFor="email" className="block text-gray-700 mb-1 font-medium">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          value={form.email}
-          onChange={handleChange}
-          className={`w-full border p-2 rounded focus:outline-none ${
-            inputError.email ? "border-red-500" : "border-gray-300"
-          }`}
-        />
-        {inputError.email && (
-          <span className="text-red-500 text-xs">{inputError.email}</span>
-        )}
-      </div>
-
-      {/* Password */}
-      <div>
-        <label htmlFor="password" className="block text-gray-700 mb-1 font-medium">
-          Password
-        </label>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            id="password"
-            name="password"
-            autoComplete="new-password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            className={`w-full border p-2 rounded pr-10 focus:outline-none ${
-              inputError.password ? "border-red-500" : "border-gray-300"
-            }`}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((s) => !s)}
-            className="absolute right-2 top-2 text-gray-500 text-xs"
-            tabIndex={-1}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? "Hide" : "Show"}
-          </button>
+        <div className="text-center text-sm">
+          <span className="text-gray-600">Already have an account? </span>
+          <Link to="/login" className="font-medium text-emerald-600 hover:text-emerald-500 transition duration-200">
+            Sign in
+          </Link>
         </div>
-        {inputError.password && (
-          <span className="text-red-500 text-xs">{inputError.password}</span>
-        )}
-      </div>
-
-      <button
-        type="submit"
-        className={`w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold transition ${
-          loading ? "opacity-70 cursor-wait" : ""
-        }`}
-        disabled={loading}
-      >
-        {loading ? "Signing up..." : "Sign Up"}
-      </button>
-
-      <p className="text-center text-gray-600 text-sm mt-6">
-        Already have an account?{" "}
-        <Link to="/" className="text-blue-600 hover:underline font-semibold">
-          Log in
-        </Link>
-      </p>
-    </form>
+      </form>
+    </motion.div>
   );
-}
+};
+
+export default SignupForm;

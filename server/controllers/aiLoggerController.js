@@ -26,7 +26,7 @@ export const analyzeAndLogFood = async (req, res) => {
     });
 
     // Debug: print the full Cohere response
-    console.log("Cohere API full response:", JSON.stringify(cohereRes, null, 2));
+    // console.log("Cohere API full response:", JSON.stringify(cohereRes, null, 2));
     if (!cohereRes || !Array.isArray(cohereRes.generations) || !cohereRes.generations[0]) {
       throw new Error("Malformed or empty Cohere API response");
     }

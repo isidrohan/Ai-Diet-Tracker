@@ -36,13 +36,66 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      {message && (
-        <div className="mb-4 bg-green-100 text-green-800 px-4 py-2 rounded shadow text-center font-semibold">
-          {message}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+      <div className="flex w-full max-w-6xl mx-auto px-4">
+        {/* Left Section - Login Form */}
+        <div className="w-full md:w-1/2 p-8">
+          {message && (
+            <div className="mb-4 bg-emerald-100 text-emerald-800 px-6 py-3 rounded-lg shadow-sm text-center font-medium animate-fadeIn">
+              {message}
+            </div>
+          )}
+          <LoginForm onSubmit={handleLogin} error={error} />
         </div>
-      )}
-      <LoginForm onSubmit={handleLogin} error={error} />
+
+        {/* Right Section - Features */}
+        <div className="hidden md:flex md:w-1/2 p-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl shadow-2xl">
+          <div className="flex flex-col justify-center text-white">
+            <h2 className="text-4xl font-bold mb-6">Welcome to Smart Diet Tracker</h2>
+            <p className="text-emerald-50 mb-8 text-lg">
+              Your personal AI-powered nutrition companion for a healthier lifestyle.
+            </p>
+            
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="bg-white/10 p-3 rounded-lg">
+                  <svg className="w-6 h-6 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Track Your Progress</h3>
+                  <p className="text-emerald-50 text-sm">Monitor your daily nutrition intake and achieve your health goals.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="bg-white/10 p-3 rounded-lg">
+                  <svg className="w-6 h-6 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">AI-Powered Insights</h3>
+                  <p className="text-emerald-50 text-sm">Get personalized recommendations based on your eating habits.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="bg-white/10 p-3 rounded-lg">
+                  <svg className="w-6 h-6 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Real-time Tracking</h3>
+                  <p className="text-emerald-50 text-sm">Log your meals and see your progress in real-time.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

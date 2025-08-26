@@ -3,6 +3,19 @@ import { useState, useEffect, useContext } from "react";
 import Calendar from "react-calendar";
 import { AuthContext } from "../context/AuthContext";
 import { useFoodLog } from "../context/FoodLogContext";
+                <p className="text-blue-200 text-xs">calories</p>
+              </div>
+              <div className="h-12 w-px bg-white/20"></div>
+              <div className="text-center">
+                <p className="text-blue-100 text-sm font-medium mb-1">Consumed</p>
+                <p className="text-2xl font-bold text-white">{(totals?.calories || 0).toFixed(1)}</p>
+                <p className="text-blue-200 text-xs">calories</p>
+              </div>
+              <div className="h-12 w-px bg-white/20"></div>
+              <div className="text-center">
+                <p className="text-blue-100 text-sm font-medium mb-1">Remaining</p>
+                <p className="text-2xl font-bold text-white">{Math.max((nutrition?.calories || 1550) - (totals?.calories || 0), 0).toFixed(1)}</p>
+                <p className="text-blue-200 text-xs">calories</p>"../context/FoodLogContext";
 import API from "../api";
 import "./CalendarTracker.css";
 
@@ -36,6 +49,18 @@ const CalendarTracker = () => {
   const [nutrition, setNutrition] = useState(null);
   const { currentDayTotals, setTotals: setCurrentDayTotals } = useFoodLog();
   
+  useEffect(() => {
+    if (isSameDay(selectedDate, new Date()) && currentDayTotals) {
+      const totalsWithDefaults = {
+        calories: Number(currentDayTotals.calories || 0),
+        protein: Number(currentDayTotals.protein || 0),
+        carbs: Number(currentDayTotals.carbs || 0),
+        fat: Number(currentDayTotals.fat || 0)
+      };
+      setTotals(totalsWithDefaults);
+    }
+  }, [currentDayTotals, selectedDate]);
+
   const tileClassName = ({ date, view }) => {
     if (view === 'month') {
       return 'rounded-lg hover:bg-blue-50 transition-colors';
@@ -52,9 +77,8 @@ const CalendarTracker = () => {
     const fetchNutrition = async () => {
       try {
         const userId = user?.user?.id || user?.id;
-        if (!userId) return;
-        
         const res = await API.get(`/goal/user`, { params: { userId } });
+        console.log("logged in user data ", res);
         setNutrition(res.data);
       } catch (err) {
         console.error("Failed to fetch nutrition:", err);
@@ -63,14 +87,10 @@ const CalendarTracker = () => {
       }
     };
 
-    if (user) {
-      fetchNutrition();
-    }
-  }, [user]);
+    fetchNutrition();
+  }, []);
   const fetchFoodLogsByDate = async (date) => {
     try {
-      if (!user) return;
-      
       setLoading(true);
       // Format date in local time (YYYY-MM-DD)
       const formattedDate =
@@ -95,32 +115,24 @@ const CalendarTracker = () => {
       });
 
       // Calculate totals
-      const newTotals = foodLogs.reduce((acc, log) => {
-        return {
-          calories: acc.calories + Number(log.calories || 0),
-          protein: acc.protein + Number(log.protein || 0),
-          carbs: acc.carbs + Number(log.carbs || 0),
-          fat: acc.fat + Number(log.fat || 0)
-        };
-      }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+      let totalCalories = 0;
+      let totalProtein = 0;
+      let totalCarbs = 0;
+      let totalFat = 0;
+      console.log(foodLogs);
+      foodLogs.forEach((log) => {
+        totalCalories += Number(log.calories) || 0;
+        totalProtein += Number(log.protein) || 0;
+        totalCarbs += Number(log.carbs) || 0;
+        totalFat += Number(log.fat) || 0;
+      });
 
-      // Ensure all values are numbers
-      const processedTotals = {
-        calories: Number(newTotals.calories),
-        protein: Number(newTotals.protein),
-        carbs: Number(newTotals.carbs),
-        fat: Number(newTotals.fat)
-      };
-      
-      console.log('Fetched totals:', processedTotals);
-      
-      // For today's date, first set the context
-      if (isSameDay(date, new Date())) {
-        setCurrentDayTotals(processedTotals);
-      }
-      
-      // Then set the local state
-      setTotals(processedTotals);
+      setTotals({
+        calories: totalCalories,
+        protein: totalProtein,
+        carbs: totalCarbs,
+        fat: totalFat,
+      });
     } catch (err) {
       console.error("Error fetching food logs:", err);
       setTotals(null);
@@ -132,26 +144,6 @@ const CalendarTracker = () => {
   useEffect(() => {
     fetchFoodLogsByDate(selectedDate);
   }, [selectedDate]);
-
-  useEffect(() => {
-    // Always update totals for today's date when currentDayTotals changes
-    if (isSameDay(selectedDate, new Date())) {
-      console.log('Updating totals from context:', currentDayTotals);
-      setTotals({
-        calories: Number(currentDayTotals.calories || 0),
-        protein: Number(currentDayTotals.protein || 0),
-        carbs: Number(currentDayTotals.carbs || 0),
-        fat: Number(currentDayTotals.fat || 0)
-      });
-    }
-  }, [currentDayTotals, selectedDate]);
-
-  // Add separate effect for initial load and date changes
-  useEffect(() => {
-    if (user) {
-      fetchFoodLogsByDate(selectedDate);
-    }
-  }, [selectedDate, user]);
 
   const isSameDay = (date1, date2) => {
     return date1.getFullYear() === date2.getFullYear() &&
@@ -193,19 +185,19 @@ const CalendarTracker = () => {
             <div className="bg-white/10 rounded-xl backdrop-blur-sm p-4 flex items-center gap-6">
               <div className="text-center">
                 <p className="text-blue-100 text-sm font-medium mb-1">Daily Goal</p>
-                <p className="text-2xl font-bold text-white">{Number(nutrition?.calories || 1550)}</p>
+                <p className="text-2xl font-bold text-white">{(nutrition?.calories || 1550).toFixed(1)}</p>
                 <p className="text-blue-200 text-xs">calories</p>
               </div>
               <div className="h-12 w-px bg-white/20"></div>
               <div className="text-center">
                 <p className="text-blue-100 text-sm font-medium mb-1">Consumed</p>
-                <p className="text-2xl font-bold text-white">{Number(totals?.calories || 0)}</p>
+                <p className="text-2xl font-bold text-white">{(totals?.calories || 0).toFixed(1)}</p>
                 <p className="text-blue-200 text-xs">calories</p>
               </div>
               <div className="h-12 w-px bg-white/20"></div>
               <div className="text-center">
                 <p className="text-blue-100 text-sm font-medium mb-1">Remaining</p>
-                <p className="text-2xl font-bold text-white">{Number(Math.max((nutrition?.calories || 1550) - (totals?.calories || 0), 0))}</p>
+                <p className="text-2xl font-bold text-white">{Math.max((nutrition?.calories || 1550) - (totals?.calories || 0), 0).toFixed(1)}</p>
                 <p className="text-blue-200 text-xs">calories</p>
               </div>
             </div>
